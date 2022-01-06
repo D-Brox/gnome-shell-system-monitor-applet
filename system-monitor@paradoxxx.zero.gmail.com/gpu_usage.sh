@@ -30,6 +30,9 @@ checkcommand()
 if checkcommand nvidia-smi; then
 	nvidia-smi -i 0 --query-gpu=memory.total,memory.used,utilization.gpu --format=csv,noheader,nounits | while IFS=', ' read -r a b c; do echo "$a"; echo "$b"; echo "$c"; done
 
+elif checkcommand radeontop; then
+	radeontop -d - -l 1|tr "," "\n" | grep vram | while IFS=" " read -r a b c; do echo "scale=2; ${c%%mb} / (${b%%%}/100)" | bc; echo "${c%%mb}"; echo "${b%%%}"; done
+
 elif lsmod | grep amdgpu > /dev/null; then
 	total=$(cat /sys/class/drm/card0/device/mem_info_vram_total)
 	echo $(($total / 1024 / 1024))
